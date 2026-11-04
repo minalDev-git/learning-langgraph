@@ -1,0 +1,8 @@
+langchain_core
+langchain_community
+langgraph
+langchain-chroma
+langchain_groq
+chromadb 
+langchain-huggingface 
+sentence-transformers 
