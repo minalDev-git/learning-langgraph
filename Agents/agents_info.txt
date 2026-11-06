@@ -1,3 +1,4 @@
+AGENT 3 ReAct Agent:
 from typing import Annotated, TypedDict, Sequence
 
 from langchain_core.messages import BaseMessage # The foundational class for all message types in langGraph
@@ -49,7 +50,7 @@ How can we tell our LLM that these are the tools that you can use? We can use py
 
 The ToolNode is essentially a singular node that contains all of the different tools
 
-AGENT 4:
+AGENT 4 Drafter Agent:
 The graph of agent 4 looks similar to ReAct agent but ther's a reason that we haven't chosen ReAct agent for this project.
 See, we realized that one of the tools is the save tool, but obviously once we saved the draft, the process should end. However in ReAct agent, the
 tools always goes back to the agent(llm), not directly to the end point. We don't want taht here. So that's why, as soon as the "save" tool is used,
@@ -60,3 +61,8 @@ What will happen here is, whatever updates are made our tools will update the gl
 use the contents of this global variable and save that into a text file.
 
 From tools node there's going to be a choice of either going back to the agent or going to the End node
+
+AGENT 5 RAG Agent:
+The graph of this agent will really similar to ReAct agent's graph but we have 2 agents in this case: retriever_agent and llm agent. 
+There will be a conditional edge from llm agent --> retriever_agent and llm agent ---> END node. 
+There will be direct edge from retriever_agent --> llm agent (basically a loop b/w these 2 agents)
