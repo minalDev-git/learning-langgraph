@@ -1,0 +1,56 @@
+Lesson 7: 
+# one graph execution, which has some state, resulting in "7"
+messages = [HumanMessage(content="Add 3 and 4")]
+messages = graph.invoke({"messages":messages}) # type: ignore
+
+for m in messages['messages']:
+    m.pretty_print()
+
+# Here we don't retain a memory of "7" of initial invocation b/c the state is transient to single graph execution
+# Second independant graph execution, which has new state, and has no persistence b/w the prev execution and this one
+# messages = [HumanMessage(content="Multiply that by 2")]
+# messages = graph.invoke({"messages":messages}) # type: ignore
+
+# for m in messages['messages']:
+#     m.pretty_print()
+
+# We can use "Persistence" to address this (intoducing the idea of memory).
+# LangGraph uses "checkpointers" to save the graph state after each step and this gives "memory"
+# One of the easiest checkpointers to use is the "MemorySaver", an in-memory key-value store or Graph State
+
+# All we have to do is import "MemorySaver" and compile our graph with "checkpoint" set to memory
+
+from langgraph.checkpoint.memory import MemorySaver
+memory = MemorySaver()
+react_graph_memory = builder.compile(checkpointer=memory)
+
+Example: Consider 2 nodes. Each of the node is a step in our graph.
+checkpointers save the state of the graph at each step, as this checkpoint:
+{
+    "state": I learnt
+    "next" : node 2
+    "id": ---
+    etc
+}
+So the key thing to know is that the checkpointer at every step in our graph, will write a checkpoint, which contains the state of the graph at that point.
+And these checkpointers can be associated together in what we call a thread. So the thread is basically a collection of checkpoints.
+
+When we use memory we need to specify a thread_id. The thread_id will store our collection of Graph states. We can access that thread in the future using this thread_id.
+Control Flow of nodes and edges:
+Super-Steps: Each sequential node is a separate super-step, while parallel nodes share the same super-step. 
+Checkpoints: State and metadata are packaged at every super-step
+Thread: Collection of Checkpoints
+
+Here's how all of this comes together. All you need to do is supply this configurable, where I supply a thread_id. 
+Then I input the message just like before: messages = [HumanMessage(content="Add 3 and 4")]
+But when I invoke my graph now, I pass my input and this config (which specifies the thread_id).
+B/c I compile the graph with a checkpointer,all my checkpoints with the graph state are going to be written to this common thread_id, which I can reference later
+
+if we pass the same thread_id, then we can proceed from the previously logged state checkpoint. In this case the above conversation is captured in the thread.
+The HumanMessage we pass ("Multiply that by 2.") is appended to the above conversation. The model now know that "that" refers to the "The sum of 3 & 4 is 7".
+
+We basically had that state in that thread, which contains all the previous information into our agent to continue.
+
+Summary: You can compile your graph with what we call a "checkpointer". This checkpointer write the state of the graph at every step. And it allows us to collect
+those state snapshots/checkpoints in a thread, which we can pass to our graph on future invocations and it can pick up where it left off. It has access to the 
+entire prior state from that 1st execution. Whole previous state preserved.

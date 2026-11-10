@@ -2,7 +2,9 @@
   "dockerfile_lines": [],
   "graphs": {
     "simple_graph": "./lesson2.py:graph",
-    "router": "./lesson5.py:graph"
+    "router": "./lesson5.py:graph",
+    "react": "./lesson6.py:graph",
+    "agent": "./lesson7.py:graph"
   },
   "env": "./.env",
   "python_version": "3.11",
